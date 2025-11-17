@@ -1,3 +1,10 @@
-/home/bec/Desktop/Desafio PSI CaixaVerso/painel-investimentos-risco/src/main/java/dev/desafio/GreetingResource.java
-/home/bec/Desktop/Desafio PSI CaixaVerso/painel-investimentos-risco/src/main/java/dev/desafio/MyEntity.java
-/home/bec/Desktop/Desafio PSI CaixaVerso/painel-investimentos-risco/src/main/java/dev/desafio/MyLivenessCheck.java
+/home/bec/Documents/Projects/Desafio_PSI_CaixaVerso/painel-investimentos-risco/src/main/java/dev/desafio/dto/LoginRequest.java
+/home/bec/Documents/Projects/Desafio_PSI_CaixaVerso/painel-investimentos-risco/src/main/java/dev/desafio/entity/HistoricoInvestimento.java
+/home/bec/Documents/Projects/Desafio_PSI_CaixaVerso/painel-investimentos-risco/src/main/java/dev/desafio/entity/NivelRisco.java
+/home/bec/Documents/Projects/Desafio_PSI_CaixaVerso/painel-investimentos-risco/src/main/java/dev/desafio/entity/ProdutoInvestimento.java
+/home/bec/Documents/Projects/Desafio_PSI_CaixaVerso/painel-investimentos-risco/src/main/java/dev/desafio/entity/Usuario.java
+/home/bec/Documents/Projects/Desafio_PSI_CaixaVerso/painel-investimentos-risco/src/main/java/dev/desafio/resource/AuthResource.java
+/home/bec/Documents/Projects/Desafio_PSI_CaixaVerso/painel-investimentos-risco/src/main/java/dev/desafio/resource/HistoricoInvestimentoResource.java
+/home/bec/Documents/Projects/Desafio_PSI_CaixaVerso/painel-investimentos-risco/src/main/java/dev/desafio/resource/ProdutoInvestimentoResource.java
+/home/bec/Documents/Projects/Desafio_PSI_CaixaVerso/painel-investimentos-risco/src/main/java/dev/desafio/service/AuthService.java
+/home/bec/Documents/Projects/Desafio_PSI_CaixaVerso/painel-investimentos-risco/src/main/java/dev/desafio/tools/ToolsResource.java
