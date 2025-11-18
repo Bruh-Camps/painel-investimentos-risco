@@ -22,6 +22,6 @@ public class HistoricoInvestimento extends PanacheEntity {
     @Column(nullable = false)
     public BigDecimal rentabilidade;
 
-    @Column(nullable = false)
-    public LocalDate data;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    public String data;
 }
