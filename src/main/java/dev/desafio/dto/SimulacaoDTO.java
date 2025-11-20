@@ -1,6 +1,7 @@
 package dev.desafio.dto;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class SimulacaoDTO {
@@ -23,6 +24,20 @@ public class SimulacaoDTO {
             this.produtoValidado = produto;
             this.resultadoSimulacao = resultado;
             this.dataSimulacao = LocalDateTime.now();
+        }
+    }
+
+    public static class AgregadoProdutoDia {
+        public String produto;
+        public LocalDate data;
+        public Long quantidadeSimulacoes;
+        public BigDecimal mediaValorFinal;
+
+        public AgregadoProdutoDia(String produto, LocalDate data, Long quantidade, BigDecimal media) {
+            this.produto = produto;
+            this.data = data;
+            this.quantidadeSimulacoes = quantidade;
+            this.mediaValorFinal = media;
         }
     }
 

@@ -37,6 +37,6 @@ public class HistoricoInvestimentoResource {
             throw new WebApplicationException("Utilizador não encontrado", 404);
         }
 
-        return HistoricoInvestimento.list("clienteId", usuario.id);
+        return HistoricoInvestimento.list("clienteId", usuario.getId());
     }
 }

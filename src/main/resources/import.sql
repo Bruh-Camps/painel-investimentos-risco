@@ -2,6 +2,7 @@
 DELETE FROM HistoricoInvestimento;
 DELETE FROM ProdutoInvestimento;
 DELETE FROM Usuario;
+DELETE FROM Simulacao;
 
 -- Insere usuários
 INSERT INTO Usuario(id, username, password, role)
