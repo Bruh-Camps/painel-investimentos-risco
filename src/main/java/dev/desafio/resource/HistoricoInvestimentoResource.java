@@ -2,13 +2,12 @@ package dev.desafio.resource;
 
 import dev.desafio.entity.HistoricoInvestimento;
 import dev.desafio.entity.Usuario;
-import io.quarkus.panache.common.Sort;
 import jakarta.annotation.security.RolesAllowed;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
-import jakarta.inject.Inject;
 import java.util.List;
 
 @Path("/investimentos")

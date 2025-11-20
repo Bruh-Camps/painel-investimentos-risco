@@ -4,13 +4,16 @@ import dev.desafio.dto.SimulacaoDTO;
 import dev.desafio.entity.ProdutoInvestimento;
 import dev.desafio.entity.Simulacao;
 import dev.desafio.entity.Usuario;
+import dev.desafio.service.TelemetriaService;
+import io.micrometer.core.annotation.Timed;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.math.BigDecimal;
@@ -35,61 +38,75 @@ public class SimulacaoResource {
     @Inject
     jakarta.ws.rs.core.SecurityContext securityContext;
 
+    @Inject
+    TelemetriaService telemetriaService;
+
     @POST
     @Path("simular-investimento")
+    @Timed(value = "simulacao.processamento", description = "Tempo para realizar uma simulação")
     @Transactional
     public Response simular(SimulacaoDTO.Request request) {
-        // 1. Validar Produto
-        ProdutoInvestimento produto = ProdutoInvestimento.find("tipo", request.tipoProduto).firstResult();
-        if (produto == null) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Nenhum produto encontrado para o tipo: " + request.tipoProduto).build();
+
+        long inicio = System.currentTimeMillis();
+
+        try {
+
+            // 1. Validar Produto
+            ProdutoInvestimento produto = ProdutoInvestimento.find("tipo", request.tipoProduto).firstResult();
+            if (produto == null) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Nenhum produto encontrado para o tipo: " + request.tipoProduto).build();
+            }
+
+            // 2. Buscar o Utilizador Logado (SEGURANÇA)
+            String username = jwt.getName();
+            Usuario usuario = Usuario.findByUsername(username);
+
+            // Se não achar o utilizador (ex: token antigo), lança erro
+            if (usuario == null) {
+                return Response.status(Response.Status.UNAUTHORIZED).build();
+            }
+
+            // --- CÁLCULOS ---
+            BigDecimal taxaAnual = produto.rentabilidadeAnual.divide(BigDecimal.valueOf(100), MathContext.DECIMAL128);
+            double taxaMensalDouble = Math.pow(1 + taxaAnual.doubleValue(), 1.0 / 12.0) - 1;
+            BigDecimal taxaMensal = BigDecimal.valueOf(taxaMensalDouble);
+            BigDecimal fatorCrescimento = taxaMensal.add(BigDecimal.ONE).pow(request.prazoMeses);
+            BigDecimal valorFinal = request.valor.multiply(fatorCrescimento).setScale(2, RoundingMode.HALF_UP);
+
+            // --- PERSISTÊNCIA ---
+            Simulacao novaSimulacao = new Simulacao();
+
+            // CORREÇÃO AQUI: Usamos o ID do token, ignorando o JSON 'fake'
+            novaSimulacao.clienteId = usuario.getId();
+            novaSimulacao.valorInvestido = request.valor;
+            novaSimulacao.valorFinal = valorFinal;
+            novaSimulacao.prazoMeses = request.prazoMeses;
+            novaSimulacao.produtoNome = produto.nome;
+            novaSimulacao.produtoTipo = produto.tipo;
+            novaSimulacao.dataSimulacao = LocalDateTime.now();
+            novaSimulacao.persistAndFlush();
+
+            // --- RETORNO ---
+            SimulacaoDTO.ProdutoInfo produtoInfo = new SimulacaoDTO.ProdutoInfo();
+            produtoInfo.id = produto.getId();
+            produtoInfo.nome = produto.nome;
+            produtoInfo.tipo = produto.tipo;
+            produtoInfo.rentabilidade = produto.rentabilidadeAnual;
+            produtoInfo.risco = produto.risco.name();
+
+            SimulacaoDTO.ResultadoSimulacao resultado = new SimulacaoDTO.ResultadoSimulacao();
+            resultado.valorFinal = valorFinal;
+            resultado.prazoMeses = request.prazoMeses;
+            resultado.rentabilidadeEfetiva = valorFinal.subtract(request.valor)
+                    .divide(request.valor, 4, RoundingMode.HALF_UP);
+
+            return Response.ok(new SimulacaoDTO.Response(produtoInfo, resultado)).build();
+        } finally {
+            long fim = System.currentTimeMillis();
+            // 2. Registrar no nosso serviço
+            telemetriaService.registrar("simular-investimento", fim - inicio);
         }
-
-        // 2. Buscar o Utilizador Logado (SEGURANÇA)
-        String username = jwt.getName();
-        Usuario usuario = Usuario.findByUsername(username);
-
-        // Se não achar o utilizador (ex: token antigo), lança erro
-        if (usuario == null) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-
-        // --- CÁLCULOS ---
-        BigDecimal taxaAnual = produto.rentabilidadeAnual.divide(BigDecimal.valueOf(100), MathContext.DECIMAL128);
-        double taxaMensalDouble = Math.pow(1 + taxaAnual.doubleValue(), 1.0 / 12.0) - 1;
-        BigDecimal taxaMensal = BigDecimal.valueOf(taxaMensalDouble);
-        BigDecimal fatorCrescimento = taxaMensal.add(BigDecimal.ONE).pow(request.prazoMeses);
-        BigDecimal valorFinal = request.valor.multiply(fatorCrescimento).setScale(2, RoundingMode.HALF_UP);
-
-        // --- PERSISTÊNCIA ---
-        Simulacao novaSimulacao = new Simulacao();
-
-        // CORREÇÃO AQUI: Usamos o ID do token, ignorando o JSON 'fake'
-        novaSimulacao.clienteId = usuario.getId();
-        novaSimulacao.valorInvestido = request.valor;
-        novaSimulacao.valorFinal = valorFinal;
-        novaSimulacao.prazoMeses = request.prazoMeses;
-        novaSimulacao.produtoNome = produto.nome;
-        novaSimulacao.produtoTipo = produto.tipo;
-        novaSimulacao.dataSimulacao = LocalDateTime.now();
-        novaSimulacao.persistAndFlush();
-
-        // --- RETORNO ---
-        SimulacaoDTO.ProdutoInfo produtoInfo = new SimulacaoDTO.ProdutoInfo();
-        produtoInfo.id = produto.getId();
-        produtoInfo.nome = produto.nome;
-        produtoInfo.tipo = produto.tipo;
-        produtoInfo.rentabilidade = produto.rentabilidadeAnual;
-        produtoInfo.risco = produto.risco.name();
-
-        SimulacaoDTO.ResultadoSimulacao resultado = new SimulacaoDTO.ResultadoSimulacao();
-        resultado.valorFinal = valorFinal;
-        resultado.prazoMeses = request.prazoMeses;
-        resultado.rentabilidadeEfetiva = valorFinal.subtract(request.valor)
-                .divide(request.valor, 4, RoundingMode.HALF_UP);
-
-        return Response.ok(new SimulacaoDTO.Response(produtoInfo, resultado)).build();
     }
 
     // Endpoint que retorna todas as simulações realizadas

@@ -1,11 +1,9 @@
 package dev.desafio.entity;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 @Entity
 public class HistoricoInvestimento extends PanacheEntityBase {

@@ -4,11 +4,7 @@ import dev.desafio.entity.NivelRisco;
 import dev.desafio.entity.ProdutoInvestimento;
 import io.quarkus.panache.common.Sort;
 import jakarta.annotation.security.RolesAllowed;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 
 import java.util.ArrayList;

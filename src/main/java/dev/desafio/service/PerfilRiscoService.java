@@ -1,7 +1,6 @@
 package dev.desafio.service;
 
 import dev.desafio.entity.HistoricoInvestimento;
-import dev.desafio.entity.ProdutoInvestimento;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.math.BigDecimal;
