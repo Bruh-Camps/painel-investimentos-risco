@@ -20,10 +20,8 @@ public class PerfilRiscoResourceTest {
     @BeforeEach
     @Transactional
     public void setup() {
-        // Limpa histórico para garantir teste limpo
         HistoricoInvestimento.deleteAll();
 
-        // Garante que o utilizador 1 existe (já vem do import.sql, mas por segurança)
         if (Usuario.findById(1L) == null) {
             Usuario u = new Usuario();
             u.setId(1L);
@@ -48,7 +46,6 @@ public class PerfilRiscoResourceTest {
     @TestSecurity(user = "user123", roles = "user")
     public void testeEndpointPerfilAgressivo() {
 
-        // 1. Abrir uma transação curta apenas para inserir e COMMITAR logo em seguida
         QuarkusTransaction.requiringNew().run(() -> {
             HistoricoInvestimento inv = new HistoricoInvestimento();
             inv.clienteId = 1L;
@@ -59,7 +56,6 @@ public class PerfilRiscoResourceTest {
             inv.persist();
         });
 
-        // 2. Agora que o dado está comitado no banco, chamamos a API
         given()
                 .when()
                 .get("/perfil-risco/1")

@@ -26,7 +26,6 @@ public class SimulacaoResourceTest {
         // Limpa simulações anteriores para não sujar os testes
         Simulacao.deleteAll();
 
-        // Cria Simulação do Usuário 1 (user123)
         Simulacao s1 = new Simulacao();
         s1.clienteId = 1L; // ID do user123 (ver import.sql)
         s1.valorInvestido = new BigDecimal("1000");
@@ -35,7 +34,6 @@ public class SimulacaoResourceTest {
         s1.dataSimulacao = LocalDateTime.now();
         s1.persist();
 
-        // Cria Simulação do Usuário 2 (admin123 ou outro)
         Simulacao s2 = new Simulacao();
         s2.clienteId = 2L; // ID de outro usuário
         s2.valorInvestido = new BigDecimal("5000");
@@ -79,7 +77,7 @@ public class SimulacaoResourceTest {
                 .when()
                 .post("/simular-investimento")
                 .then()
-                .statusCode(401); // Espera Unauthorized
+                .statusCode(401);
     }
 
     @Test
@@ -98,7 +96,6 @@ public class SimulacaoResourceTest {
                 .post("/simular-investimento")
                 .then()
                 .statusCode(400) // Espera Bad Request
-                // Opcional: Verifica se a mensagem de erro está correta
                 .body(containsString("Nenhum produto encontrado"));
     }
 

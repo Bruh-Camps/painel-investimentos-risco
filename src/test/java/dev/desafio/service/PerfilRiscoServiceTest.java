@@ -110,9 +110,6 @@ public class PerfilRiscoServiceTest {
         Mockito.when(HistoricoInvestimento.list("clienteId", 3L))
                 .thenReturn(List.of(inv1));
 
-        // Pontos: 2 (tipo) + 10 (volume) + 2 (freq) = 14 pts
-        // Ops, < 20 é Conservador. Vamos adicionar mais um investimento.
-
         HistoricoInvestimento inv2 = new HistoricoInvestimento();
         inv2.tipo = "FII"; // +10 pts
         inv2.valor = new BigDecimal("5000"); // +0 pts volume extra significativo
@@ -120,11 +117,6 @@ public class PerfilRiscoServiceTest {
         Mockito.when(HistoricoInvestimento.list("clienteId", 3L))
                 .thenReturn(List.of(inv1, inv2));
 
-        // Novo Total:
-        // Tipos: 2 (CDB) + 10 (FII) = 12
-        // Volume Total: 25.000 -> 10 pts
-        // Frequência: 4 pts
-        // TOTAL: 26 pts -> Moderado (>= 20 e < 50)
 
         var resultado = perfilService.calcularPerfil(3L);
 
