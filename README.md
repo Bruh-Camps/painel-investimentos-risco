@@ -112,3 +112,7 @@ O sistema inicia com os seguintes utilizadores para facilitar a avaliação:
 **Tratamento de Erros:** Implementação de um GlobalExceptionHandler para garantir que todos os erros retornem respostas JSON padronizadas e amigáveis.
 
 **Padrão DTO:** Separação estrita entre Entidades de Banco de Dados e Objetos de Transferência de Dados (Request/Response) para segurança e clareza da API.
+
+> ** Nota de Segurança para Avaliação:**
+> As chaves RSA (`privateKey.pem` e `publicKey.pem`) foram incluídas intencionalmente no repositório para facilitar a execução e avaliação do desafio.
+> Em num ambiente de produção real, estas chaves não seriam commitadas; seriam injetadas via Secret Manager (Vault, Kubernetes Secrets) ou variáveis de ambiente no momento do deploy.
