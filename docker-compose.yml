@@ -4,7 +4,7 @@ services:
     container_name: painel-investimentos-app
     build:
       context: .
-      dockerfile: src/main/docker/Dockerfile.jvm
+      dockerfile: src/main/docker/Dockerfile.multistage
     ports:
       - "8080:8080" # Porta da API
       - "5005:5005" # Porta de Debug (opcional)
