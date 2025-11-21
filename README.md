@@ -29,8 +29,6 @@ A forma recomendada para iniciar o projeto é através do Docker Compose, que or
 Certifique-se de ter o Docker e o Docker Compose instalados. Na raiz do projeto, execute:
 
 ```bash
-
-./mvnw clean package -DskipTests
 docker compose up --build
 ```
 - A API estará disponível em: http://localhost:8080
