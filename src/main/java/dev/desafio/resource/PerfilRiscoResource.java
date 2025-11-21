@@ -34,10 +34,8 @@ public class PerfilRiscoResource {
 
         try {
 
-            // 1. Chama o serviço para calcular o perfil
             PerfilRiscoService.PerfilCalculado resultado = perfilService.calcularPerfil(clienteId);
 
-            // 2. Monta o DTO de resposta (Record) para o JSON
             PerfilResponse response = new PerfilResponse(
                     clienteId,
                     resultado.perfil(),

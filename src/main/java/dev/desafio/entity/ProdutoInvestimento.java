@@ -1,5 +1,6 @@
 package dev.desafio.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 
@@ -19,6 +20,7 @@ public class ProdutoInvestimento extends PanacheEntityBase {
     public String tipo;
 
     @Column(nullable = false)
+    @JsonProperty("rentabilidade")
     public BigDecimal rentabilidadeAnual;
 
     @Enumerated(EnumType.STRING)

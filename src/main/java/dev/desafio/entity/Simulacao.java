@@ -1,6 +1,7 @@
 package dev.desafio.entity;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -15,7 +16,11 @@ public class Simulacao extends PanacheEntityBase {
     private Integer id;
 
     public Long clienteId;
+
+    @JsonProperty("produto")
     public String produtoNome;
+
+    @JsonProperty("tipo")
     public String produtoTipo;
     public BigDecimal valorInvestido;
     public BigDecimal valorFinal;

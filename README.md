@@ -1,85 +1,116 @@
-# painel-investimentos-risco
+# Desafio – Painel de Investimentos com Perfil de Risco Dinâmico
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+Este projeto consiste em uma API RESTful que analisa o comportamento financeiro do cliente e ajusta
+automaticamente seu perfil de risco, sugerindo produtos de investimento como CDBs,
+LCIs, LCAs, Tesouro Direto, Fundos, etc.
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+## Tecnologias e Arquitetura
 
-## Running the application in dev mode
+O projeto utiliza a seguinte stack tecnológica:
 
-You can run your application in dev mode that enables live coding using:
+* **Linguagem:** Java 21 (LTS)
+* **Framework:** Quarkus 
+* **Banco de Dados:** SQLite 
+* **Containerização:** Docker & Docker Compose
+* **Segurança:** JWT com chaves RSA e BCrypt para hash de senhas
+* **Testes:** JUnit 5, RestAssured e Mockito
+* **Cobertura de Código:** JaCoCo (> 80% de cobertura)
+* **Observabilidade:** Micrometer (Métricas customizadas de telemetria)
+* **Documentação:** OpenAPI / Swagger UI
 
-```shell script
-./mvnw quarkus:dev
+---
+
+## Como Executar a Aplicação
+
+A forma recomendada para iniciar o projeto é através do Docker Compose, que orquestra a aplicação e configura o ambiente automaticamente.
+
+### Opção 1: Via Docker (Recomendado)
+
+Certifique-se de ter o Docker e o Docker Compose instalados. Na raiz do projeto, execute:
+
+```bash
+
+./mvnw clean package -DskipTests
+docker compose up --build
+```
+- A API estará disponível em: http://localhost:8080
+- O banco de dados será criado automaticamente com dados iniciais.
+
+
+### Opção 2: Execução Local (Modo Desenvolvimento)
+Caso prefira rodar diretamente na JVM local (necessário JDK 21):
+```bash
+
+# Linux / Mac
+./mvnw clean quarkus:dev
+
+# Windows
+mvnw.cmd clean quarkus:dev
+```
+---
+
+## Documentação da API (Swagger)
+A documentação interativa de todos os endpoints está disponível via Swagger UI. Através dela, é possível visualizar os DTOs e testar as requisições em tempo real.
+
+Acesse: http://localhost:8080/q/swagger-ui
+
+---
+
+## Testes e Cobertura de Código
+O projeto possui testes unitários (lógica de negócio) e testes de integração (endpoints e segurança).
+
+### Executar os Testes
+
+Para rodar a bateria completa de testes:
+
+```bash
+./mvnw test
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+### Relatório de Cobertura (> 80%)
 
-## Packaging and running the application
+A aplicação utiliza o JaCoCo para garantir a qualidade do código. A cobertura atual supera os 80%, validando tanto os caminhos felizes quanto o tratamento de exceções.
 
-The application can be packaged using:
+Após a execução dos testes, o relatório detalhado pode ser consultado em:
 
-```shell script
-./mvnw package
-```
+```target/jacoco-report/index.html```
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+---
 
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
+## Segurança e Controle de Acesso
+A segurança foi implementada conforme a especificação, utilizando autenticação via Token JWT assinado.
 
-If you want to build an _über-jar_, execute the following command:
+Perfis de Acesso (RBAC)
+- USER: Acesso limitado aos seus próprios dados de simulação e perfil.
+- ADMIN: Acesso total, incluindo relatórios gerenciais e dados de telemetria.
 
-```shell script
-./mvnw package -Dquarkus.package.jar.type=uber-jar
-```
+### Credenciais para Teste (Pré-carregadas)
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
+O sistema inicia com os seguintes utilizadores para facilitar a avaliação:
 
-## Creating a native executable
+| Usuário   | Senha    | Papel | Permissões                                                        |
+|-----------|----------|-------|--------------------------------------------------------------------|
+| user123   | user123  | user  | Simular, Ver Perfil Próprio, Listar Minhas Simulações              |
+| admin123  | admin123 | admin | Ver Telemetria, Listar Todas Simulações, Relatórios                |
 
-You can create a native executable using:
+---
 
-```shell script
-./mvnw package -Dnative
-```
+## Funcionalidades Principais
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
+- Autenticação (```/auth/login```): Geração de token JWT seguro.
 
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
-```
+- Cálculo de Perfil (```/perfil-risco/{id}```): Algoritmo que classifica o cliente em Conservador, Moderado ou Agressivo baseado no histórico financeiro.
 
-You can then execute your native executable with: `./target/painel-investimentos-risco-1.0.0-SNAPSHOT-runner`
+- Simulação de Investimentos (```/simular-investimento```): Projeção de rentabilidade futura com persistência automática e cálculo de juros compostos.
 
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
+- Motor de Recomendação (```/produtos-recomendados/{perfil}```): Sugere produtos (CDB, FIIs, Ações) adequados ao perfil de risco.
 
-## Related Guides
+- Telemetria (```/telemetria```): Endpoint exclusivo para administradores que monitoriza o desempenho e o volume de chamadas dos serviços críticos.
 
-- SmallRye OpenAPI ([guide](https://quarkus.io/guides/openapi-swaggerui)): Document your REST APIs with OpenAPI - comes with Swagger UI
-- Hibernate ORM with Panache ([guide](https://quarkus.io/guides/hibernate-orm-panache)): Simplify your persistence code for Hibernate ORM via the active record or the repository pattern
-- RESTEasy Classic ([guide](https://quarkus.io/guides/resteasy)): REST endpoint framework implementing Jakarta REST and more
-- SmallRye JWT ([guide](https://quarkus.io/guides/security-jwt)): Secure your applications with JSON Web Token
-- SmallRye Health ([guide](https://quarkus.io/guides/smallrye-health)): Monitor service health
+---
 
-## Provided Code
+## Outros Detalhes de Implementação
 
-### Hibernate ORM
+**Tratamento de Erros:** Implementação de um GlobalExceptionHandler para garantir que todos os erros retornem respostas JSON padronizadas e amigáveis.
 
-Create your first JPA entity
-
-[Related guide section...](https://quarkus.io/guides/hibernate-orm)
-
-[Related Hibernate with Panache section...](https://quarkus.io/guides/hibernate-orm-panache)
-
-
-### RESTEasy JAX-RS
-
-Easily start your RESTful Web Services
-
-[Related guide section...](https://quarkus.io/guides/getting-started#the-jax-rs-resources)
-
-### SmallRye Health
-
-Monitor your application's health using SmallRye Health
-
-[Related guide section...](https://quarkus.io/guides/smallrye-health)
+**Padrão DTO:** Separação estrita entre Entidades de Banco de Dados e Objetos de Transferência de Dados (Request/Response) para segurança e clareza da API.

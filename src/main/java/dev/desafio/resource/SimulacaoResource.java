@@ -6,15 +6,12 @@ import dev.desafio.entity.Simulacao;
 import dev.desafio.entity.Usuario;
 import dev.desafio.service.TelemetriaService;
 import io.micrometer.core.annotation.Timed;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Timer;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -25,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-// ALTERAÇÃO 1: Mudamos o caminho base para "/" para suportar múltiplos endpoints distintos
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -48,33 +44,28 @@ public class SimulacaoResource {
 
         try {
 
-            // 1. Validar Produto
             ProdutoInvestimento produto = ProdutoInvestimento.find("tipo", request.tipoProduto).firstResult();
             if (produto == null) {
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity("Nenhum produto encontrado para o tipo: " + request.tipoProduto).build();
             }
 
-            // 2. Buscar o Utilizador Logado (SEGURANÇA)
             String username = securityContext.getUserPrincipal().getName();
             Usuario usuario = Usuario.findByUsername(username);
 
-            // Se não achar o utilizador (ex: token antigo), lança erro
             if (usuario == null) {
                 return Response.status(Response.Status.UNAUTHORIZED).build();
             }
 
-            // --- CÁLCULOS ---
+            // ------ CÁLCULOS ---
             BigDecimal taxaAnual = produto.rentabilidadeAnual.divide(BigDecimal.valueOf(100), MathContext.DECIMAL128);
             double taxaMensalDouble = Math.pow(1 + taxaAnual.doubleValue(), 1.0 / 12.0) - 1;
             BigDecimal taxaMensal = BigDecimal.valueOf(taxaMensalDouble);
             BigDecimal fatorCrescimento = taxaMensal.add(BigDecimal.ONE).pow(request.prazoMeses);
             BigDecimal valorFinal = request.valor.multiply(fatorCrescimento).setScale(2, RoundingMode.HALF_UP);
 
-            // --- PERSISTÊNCIA ---
             Simulacao novaSimulacao = new Simulacao();
 
-            // CORREÇÃO AQUI: Usamos o ID do token, ignorando o JSON 'fake'
             novaSimulacao.clienteId = usuario.getId();
             novaSimulacao.valorInvestido = request.valor;
             novaSimulacao.valorFinal = valorFinal;
@@ -84,7 +75,6 @@ public class SimulacaoResource {
             novaSimulacao.dataSimulacao = LocalDateTime.now();
             novaSimulacao.persistAndFlush();
 
-            // --- RETORNO ---
             SimulacaoDTO.ProdutoInfo produtoInfo = new SimulacaoDTO.ProdutoInfo();
             produtoInfo.id = produto.getId();
             produtoInfo.nome = produto.nome;
@@ -101,12 +91,10 @@ public class SimulacaoResource {
             return Response.ok(new SimulacaoDTO.Response(produtoInfo, resultado)).build();
         } finally {
             long fim = System.currentTimeMillis();
-            // 2. Registrar no nosso serviço
             telemetriaService.registrar("simular-investimento", fim - inicio);
         }
     }
 
-    // Endpoint que retorna todas as simulações realizadas
     @GET
     @Path("simulacoes")
     public List<Simulacao> listarSimulacoes() {
@@ -127,18 +115,14 @@ public class SimulacaoResource {
         return Simulacao.list("clienteId", usuario.getId());
     }
 
-    // NOVO ENDPOINT 2: Agrupamento por Produto e Dia
-    // Requisito: "Criar um endpoint para retornar os valores simulados para cada produto em cada dia"
+
     @GET
     @Path("simulacoes/por-produto-dia")
     @RolesAllowed("admin")
     public List<SimulacaoDTO.AgregadoProdutoDia> listarAgrupadoPorProdutoDia() {
-        // 1. Buscar todos os dados
         List<Simulacao> todas = Simulacao.listAll();
 
-        // 2. Agrupar usando Java Streams com FILTROS DE SEGURANÇA
         Map<String, Map<LocalDate, List<Simulacao>>> agrupamento = todas.stream()
-                // CORREÇÃO: Filtra nulos para evitar o erro 500
                 .filter(s -> s != null)
                 .filter(s -> s.produtoNome != null)
                 .filter(s -> s.dataSimulacao != null)
@@ -149,7 +133,6 @@ public class SimulacaoResource {
                         )
                 ));
 
-        // 3. Transformar o mapa no DTO de resposta
         return agrupamento.entrySet().stream()
                 .flatMap(entryProduto -> {
                     String produtoNome = entryProduto.getKey();

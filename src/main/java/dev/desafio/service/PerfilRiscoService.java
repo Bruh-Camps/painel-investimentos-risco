@@ -9,29 +9,23 @@ import java.util.List;
 @ApplicationScoped
 public class PerfilRiscoService {
 
-    // DTO interno para devolver o resultado do cálculo
     public record PerfilCalculado(String perfil, int pontuacao, String descricao) {}
 
     public PerfilCalculado calcularPerfil(Long clienteId) {
-        // 1. Buscar histórico do cliente
         List<HistoricoInvestimento> historico = HistoricoInvestimento.list("clienteId", clienteId);
 
         if (historico.isEmpty()) {
             return new PerfilCalculado("Conservador", 0, "Sem histórico: Perfil padrão de segurança.");
         }
 
-        // 2. Algoritmo de Pontuação (Scoring)
-        // Baseado no desafio: Volume, Frequência e Tipo
+        // Algoritmo de Pontuação baseado no desafio: Volume, Frequência e Tipo
         int pontos = 0;
         BigDecimal volumeTotal = BigDecimal.ZERO;
 
         for (HistoricoInvestimento inv : historico) {
             volumeTotal = volumeTotal.add(inv.valor);
 
-            // Pontos por tipo de investimento (Simplificado)
-            // Ações/Fundo agressivo = +20 pontos
-            // FII/Fundo moderado = +10 pontos
-            // Renda Fixa/CDB = +2 pontos
+            // Pontos por tipo de investimento
             String tipo = inv.tipo.toUpperCase();
             if (tipo.contains("AÇÃO") || tipo.contains("ACOES")) {
                 pontos += 20;
@@ -43,14 +37,12 @@ public class PerfilRiscoService {
         }
 
         // Pontos por Volume (Ex: +10 pontos a cada 10.000 investidos)
-        // Divide por 10000 e pega a parte inteira * 5
         int pontosVolume = volumeTotal.divideToIntegralValue(new BigDecimal("10000")).intValue() * 5;
         pontos += pontosVolume;
 
         // Pontos por Frequência (Ex: +2 pontos por cada investimento realizado)
         pontos += (historico.size() * 2);
 
-        // 3. Classificação Final
         String perfil;
         String descricao;
 

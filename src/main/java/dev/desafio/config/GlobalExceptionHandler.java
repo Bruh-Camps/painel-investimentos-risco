@@ -16,13 +16,11 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
 
     @Override
     public Response toResponse(Exception exception) {
-        // Loga o erro no servidor (para você ver o que aconteceu)
         LOG.error("Erro capturado: ", exception);
 
         int code = 500;
         String mensagem = "Erro interno do servidor. Contacte o suporte.";
 
-        // Se for um erro conhecido (ex: 401, 403, 404 lançados por você)
         if (exception instanceof WebApplicationException webEx) {
             code = webEx.getResponse().getStatus();
             mensagem = exception.getMessage();

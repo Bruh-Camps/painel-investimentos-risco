@@ -9,12 +9,12 @@ services:
       - "8080:8080" # Porta da API
       - "5005:5005" # Porta de Debug (opcional)
     environment:
-      - QUARKUS_DATASOURCE_JDBC_URL=jdbc:sqlite:/work/painel_risco.db?busy_timeout=5000&journal_mode=WAL
+      - QUARKUS_DATASOURCE_JDBC_URL=jdbc:sqlite:./painel_risco.db?busy_timeout=5000&journal_mode=WAL
       - JAVA_DEBUG=true
-    volumes:
-      - ./painel_risco.db:/work/painel_risco.db
-      - ./painel_risco.db-wal:/work/painel_risco.db-wal
-      - ./painel_risco.db-shm:/work/painel_risco.db-shm
+    #volumes:
+    #  - ./painel_risco.db:/work/painel_risco.db
+    #  - ./painel_risco.db-wal:/work/painel_risco.db-wal
+    #  - ./painel_risco.db-shm:/work/painel_risco.db-shm
     networks:
       - painel-network
 

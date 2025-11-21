@@ -8,7 +8,6 @@ import java.util.Map;
 @ApplicationScoped
 public class TelemetriaService {
 
-    // Guarda as métricas por nome do serviço
     private final Map<String, DadosMetrica> estatisticas = new ConcurrentHashMap<>();
 
     public void registrar(String servico, long tempoExecucaoMs) {
@@ -20,7 +19,6 @@ public class TelemetriaService {
         return estatisticas.getOrDefault(servico, new DadosMetrica());
     }
 
-    // Classe interna para thread-safety (evitar problemas de concorrência)
     public static class DadosMetrica {
         private final AtomicLong quantidade = new AtomicLong(0);
         private final AtomicLong somaTempos = new AtomicLong(0);
