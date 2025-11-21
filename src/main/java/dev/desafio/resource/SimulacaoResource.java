@@ -33,9 +33,6 @@ import java.util.stream.Collectors;
 public class SimulacaoResource {
 
     @Inject
-    JsonWebToken jwt;
-
-    @Inject
     jakarta.ws.rs.core.SecurityContext securityContext;
 
     @Inject
@@ -59,7 +56,7 @@ public class SimulacaoResource {
             }
 
             // 2. Buscar o Utilizador Logado (SEGURANÇA)
-            String username = jwt.getName();
+            String username = securityContext.getUserPrincipal().getName();
             Usuario usuario = Usuario.findByUsername(username);
 
             // Se não achar o utilizador (ex: token antigo), lança erro
@@ -120,7 +117,7 @@ public class SimulacaoResource {
         }
 
         // Se for USER, descobre o ID e filtra
-        String username = jwt.getName();
+        String username = securityContext.getUserPrincipal().getName();
         Usuario usuario = Usuario.findByUsername(username);
 
         if (usuario == null) {
